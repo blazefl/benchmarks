@@ -1,0 +1,24 @@
+[project]
+name = "blazefl-case"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "blazefl[contrib,reproducibility]>=2.0.1",
+    "hydra-core>=1.3.2",
+    "torchvision>=0.23.0",
+]
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+
+[[tool.mypy.overrides]]
+module = "torchvision.*"
+ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.1",
+    "ruff>=0.13.0",
+]
