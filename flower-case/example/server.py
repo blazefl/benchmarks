@@ -1,3 +1,5 @@
+import logging
+import time
 import torch
 from flwr.app import ArrayRecord, ConfigRecord, Context, MetricRecord
 from flwr.serverapp import Grid, ServerApp
@@ -32,6 +34,7 @@ def main(grid: Grid, context: Context) -> None:
     strategy = FedAvg(fraction_evaluate=fraction_evaluate, min_evaluate_nodes=0)
 
     # Start strategy, run FedAvg for `num_rounds`
+    start_time = time.perf_counter()
     _ = strategy.start(
         grid=grid,
         initial_arrays=arrays,
@@ -39,6 +42,8 @@ def main(grid: Grid, context: Context) -> None:
         num_rounds=num_rounds,
         evaluate_fn=get_evaluate_fn(global_model, batch_size),
     )
+    end_time = time.perf_counter()
+    print(f"BENCHMARK_RESULT_TIME: {end_time - start_time:.4f}")
 
 
 def get_evaluate_fn(

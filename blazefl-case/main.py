@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 import sys
+import time
 
 import hydra
 import torch
@@ -33,6 +34,7 @@ class FedAvgPipeline:
         self.trainer = trainer
 
     def main(self):
+        start_time = time.perf_counter()
         while not self.handler.if_stop():
             round_ = self.handler.round
             # server side
@@ -51,7 +53,8 @@ class FedAvgPipeline:
             formatted_summary = ", ".join(f"{k}: {v:.3f}" for k, v in summary.items())
             logging.info(f"round: {round_}, {formatted_summary}")
 
-        logging.info("done!")
+        end_time = time.perf_counter()
+        logging.info(f"BENCHMARK_RESULT_TIME: {end_time - start_time:.4f}")
 
 
 cs = ConfigStore.instance()
