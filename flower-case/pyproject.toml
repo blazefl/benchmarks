@@ -1,0 +1,57 @@
+[project]
+name = "flower-case"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "flwr-datasets[vision]>=0.5.0",
+    "flwr[simulation]>=1.21.0",
+    "ray>=2.49.1",
+    "torch>=2.8.0",
+    "torchvision>=0.23.0",
+]
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+
+[tool.flwr.app]
+publisher = "blazefl"
+
+[tool.flwr.app.components]
+serverapp = "example.server:app"
+clientapp = "example.client:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 10
+fraction-evaluate = 0.0
+local-epochs = 5
+learning-rate = 0.1
+batch-size = 50
+model-name = "cnn"
+
+[tool.flwr.federations]
+default = "local-simulation"
+
+[tool.flwr.federations.local-simulation]
+options.num-supernodes = 100
+options.backend.client-resources.num-cpus = 2
+
+[tool.flwr.federations.local-simulation-gpu]
+options.num-supernodes = 100
+options.backend.client-resources.num-cpus = 2 # each ClientApp assumes to use 2CPUs
+options.backend.client-resources.num-gpus = 0.2 # at most 5 ClientApp will run in a given GPU
+
+[[tool.mypy.overrides]]
+module = [
+    "datasets.*",
+    "flwr_datasets.*",
+    "torchvision.*",
+]
+ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.1",
+    "ruff>=0.13.0",
+]
