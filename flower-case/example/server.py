@@ -19,6 +19,7 @@ def main(grid: Grid, context: Context) -> None:
     # Read run config
     fraction_evaluate: float = float(context.run_config["fraction-evaluate"])
     num_rounds: int = int(context.run_config["num-server-rounds"])
+    batch_size: int = int(context.run_config["batch-size"])
     lr: float = float(context.run_config["learning-rate"])
 
     # Load global model
@@ -36,11 +37,13 @@ def main(grid: Grid, context: Context) -> None:
         initial_arrays=arrays,
         train_config=ConfigRecord({"lr": lr}),
         num_rounds=num_rounds,
-        evaluate_fn=get_evaluate_fn(global_model),
+        evaluate_fn=get_evaluate_fn(global_model, batch_size),
     )
 
 
-def get_evaluate_fn(model: nn.Module) -> Callable[[int, ArrayRecord], MetricRecord]:
+def get_evaluate_fn(
+    model: nn.Module, batch_size: int
+) -> Callable[[int, ArrayRecord], MetricRecord]:
     def evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
         """Evaluate model on central data."""
 
@@ -54,7 +57,7 @@ def get_evaluate_fn(model: nn.Module) -> Callable[[int, ArrayRecord], MetricReco
         model.to(device)
 
         # Load entire test set
-        test_dataloader = load_centralized_dataset()
+        test_dataloader = load_centralized_dataset(batch_size)
 
         # Evaluate the global model on the test set
         test_loss, test_acc = test(model, test_dataloader, device)

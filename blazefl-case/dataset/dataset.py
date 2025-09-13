@@ -15,7 +15,6 @@ from .functional import (
     client_inner_dirichlet_partition_faster,
     shards_partition,
 )
-from .transforms import GeneratorRandomCrop, GeneratorRandomHorizontalFlip
 
 
 class PartitionedCIFAR10(PartitionedDataset[FedAvgPartitionType]):
@@ -42,10 +41,6 @@ class PartitionedCIFAR10(PartitionedDataset[FedAvgPartitionType]):
         self.train_transform = transforms.Compose(
             [
                 transforms.ToTensor(),
-                GeneratorRandomHorizontalFlip(
-                    p=0.5, generator=self.rng_suite.torch_cpu
-                ),
-                GeneratorRandomCrop(32, padding=4, generator=self.rng_suite.torch_cpu),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ]
         )

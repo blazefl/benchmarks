@@ -1,7 +1,7 @@
 import torch
 from datasets import load_dataset
 from flwr_datasets import FederatedDataset
-from flwr_datasets.partitioner import IidPartitioner
+from flwr_datasets.partitioner import PathologicalPartitioner
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Normalize, ToTensor
 
@@ -21,7 +21,11 @@ def load_data(partition_id: int, num_partitions: int, batch_size: int):
     # Only initialize `FederatedDataset` once
     global fds
     if fds is None:
-        partitioner = IidPartitioner(num_partitions=num_partitions)
+        partitioner = PathologicalPartitioner(
+            num_partitions=num_partitions,
+            partition_by="label",
+            num_classes_per_partition=2,
+        )
         fds = FederatedDataset(
             dataset="uoft-cs/cifar10",
             partitioners={"train": partitioner},
@@ -35,19 +39,19 @@ def load_data(partition_id: int, num_partitions: int, batch_size: int):
     return trainloader
 
 
-def load_centralized_dataset():
+def load_centralized_dataset(batch_size: int):
     """Load test set and return dataloader."""
     # Load entire test set
     test_dataset = load_dataset("uoft-cs/cifar10", split="test")
     dataset = test_dataset.with_format("torch").with_transform(apply_transforms)  # pyright: ignore[reportAttributeAccessIssue]
-    return DataLoader(dataset, batch_size=128)  # pyright: ignore[reportArgumentType]
+    return DataLoader(dataset, batch_size=batch_size)  # pyright: ignore[reportArgumentType]
 
 
 def train(net, trainloader, epochs, lr, device):
     """Train the model on the training set."""
     net.to(device)  # move model to GPU if available
     criterion = torch.nn.CrossEntropyLoss().to(device)
-    optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=0.9)
+    optimizer = torch.optim.SGD(net.parameters(), lr=lr)
     net.train()
     running_loss = 0.0
     for _ in range(epochs):

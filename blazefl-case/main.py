@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
+import sys
 
 import hydra
 import torch
@@ -134,6 +135,7 @@ def main(cfg: MyConfig):
                 ipc_mode=cfg.ipc_mode,
             )
         case ExecutionMode.MULTI_THREADED:
+            assert not sys._is_gil_enabled()
             trainer = FedAvgThreadPoolClientTrainer(
                 model_selector=model_selector,
                 model_name=cfg.model_name,
