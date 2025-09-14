@@ -16,7 +16,7 @@ class ExecutionMode(StrEnum):
 class MyConfig:
     model_name: FedAvgModelName = FedAvgModelName.CNN
     num_clients: int = 100
-    global_round: int = 10
+    global_round: int = 5
     sample_ratio: float = 1.0
     partition: str = "shards"
     num_shards: int = 200
