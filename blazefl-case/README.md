@@ -14,5 +14,5 @@ uv sync
 ## Usage
 
 ```bash
-uv run python main.py execution_mode=multi-threaded
+uv run python main.py execution_mode=MULTI_THREADED
 ```

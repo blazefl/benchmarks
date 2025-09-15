@@ -122,7 +122,7 @@ def main(num_runs: int = 3) -> None:
         if client_gpus_float >= 1:
             client_gpus = int(client_gpus_float)
         else:
-            client_gpus = 0
+            client_gpus = client_gpus_float
 
         flower_command = (
             f"cd flower-case && uv run flwr run . local-simulation --federation-config "
