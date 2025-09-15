@@ -95,7 +95,7 @@ def display_results(title: str, results: list[Result]) -> None:
     console.print(table)
 
 
-def main(num_runs: int = 3) -> None:
+def main(num_runs: int = 3, model_name: str = "cnn") -> None:
     logging.info("Starting benchmark...")
     cpu_count = os.cpu_count() or 1
     gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
@@ -105,17 +105,24 @@ def main(num_runs: int = 3) -> None:
     for num_parallel in num_parallels:
         results: list[Result] = []
 
-        blazefl_command = f"cd blazefl-case && uv run python -Xgil=0 main.py execution_mode=MULTI_THREADED num_parallels={num_parallel} && cd .."
-        blazefl_times = run_benchmark(blazefl_command, num_runs)
-        if blazefl_times:
-            result = Result(
-                method="BlazeFL",
-                avg_time=statistics.mean(blazefl_times),
-                std_time=statistics.stdev(blazefl_times)
-                if len(blazefl_times) > 1
-                else 0.0,
+        execution_modes = ["MULTI_THREADED", "MULTI_PROCESS"]
+        for mode in execution_modes:
+            blazefl_command = (
+                f"cd blazefl-case && "
+                f"uv run python {'-Xgil=0' if mode == 'MULTI_THREADED' else ''} main.py "
+                f"model_name={model_name.upper()} execution_mode={mode} num_parallels={num_parallel} "
+                "&& cd .."
             )
-            results.append(result)
+            blazefl_times = run_benchmark(blazefl_command, num_runs)
+            if blazefl_times:
+                result = Result(
+                    method=f"BlazeFL ({mode})",
+                    avg_time=statistics.mean(blazefl_times),
+                    std_time=statistics.stdev(blazefl_times)
+                    if len(blazefl_times) > 1
+                    else 0.0,
+                )
+                results.append(result)
 
         client_cpus = cpu_count // num_parallel
         client_gpus_float = gpu_count / num_parallel
@@ -125,10 +132,13 @@ def main(num_runs: int = 3) -> None:
             client_gpus = client_gpus_float
 
         flower_command = (
-            f"cd flower-case && uv run flwr run . local-simulation --federation-config "
-            f'"options.num-supernodes=100 '
+            "cd flower-case && "
+            "uv run flwr run . "
+            "local-simulation "
+            '--federation-config "options.num-supernodes=100 '
             f"options.backend.client-resources.num-cpus={client_cpus} "
             f'options.backend.client-resources.num-gpus={client_gpus}" '
+            f"""--run-config "model-name='{model_name}'" """
             "&& cd .."
         )
         flower_times = run_benchmark(flower_command, num_runs)
