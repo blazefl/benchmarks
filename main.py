@@ -118,7 +118,11 @@ def main(num_runs: int = 3) -> None:
             results.append(result)
 
         client_cpus = cpu_count // num_parallel
-        client_gpus = gpu_count / num_parallel
+        client_gpus_float = gpu_count / num_parallel
+        if client_gpus_float >= 1:
+            client_gpus = int(client_gpus_float)
+        else:
+            client_gpus = 0
 
         flower_command = (
             f"cd flower-case && uv run flwr run . local-simulation --federation-config "
