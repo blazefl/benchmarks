@@ -101,12 +101,11 @@ def main(num_runs: int = 3) -> None:
     gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
 
     num_parallels: list[int] = [2**i for i in range(int(math.log2(cpu_count) + 1))]
-    num_parallels = [8]
 
     for num_parallel in num_parallels:
         results: list[Result] = []
 
-        blazefl_command = f"cd blazefl-case && uv run python main.py execution_mode=MULTI_THREADED num_parallels={num_parallel} && cd .."
+        blazefl_command = f"cd blazefl-case && uv run python -Xgil=0 main.py execution_mode=MULTI_THREADED num_parallels={num_parallel} && cd .."
         blazefl_times = run_benchmark(blazefl_command, num_runs)
         if blazefl_times:
             result = Result(
